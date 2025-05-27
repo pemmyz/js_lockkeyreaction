@@ -1,0 +1,78 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top */
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    color: #333;
+    padding-top: 20px; /* Add some padding at the top */
+}
+
+#game-container {
+    width: 800px;
+    min-height: 600px; /* Match Pygame height */
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+#stats-area p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+#visual-led-area {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 40px 0;
+    padding: 20px;
+    border: 1px dashed #ddd;
+    min-height: 150px; /* Give it some fixed height */
+}
+
+.led-button-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.led-visual {
+    width: 100px;
+    height: 100px;
+    background-color: white;
+    border: 5px solid black;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    transition: background-color 0.1s ease-in-out; /* Smooth color change */
+}
+
+.led-visual.active {
+    background-color: red;
+}
+
+#message-area {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 18px;
+    min-height: 50px; /* Reserve space for messages */
+}
+
+#message-area #pause-message {
+    font-weight: bold;
+}
+
+#hint-area {
+    margin-top: auto; /* Pushes to the bottom */
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    font-size: 12px;
+    color: #666;
+}
