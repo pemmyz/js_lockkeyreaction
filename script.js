@@ -1,8 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Theme Toggle Logic ---
+    const themeToggleButton = document.getElementById('themeToggle');
+    const bodyElement = document.body;
+
+    const setTheme = (theme) => {
+        if (theme === 'dark') {
+            bodyElement.classList.add('dark-mode');
+            themeToggleButton.textContent = '🌙 Dark Mode';
+            localStorage.setItem('theme', 'dark');
+        } else {
+            bodyElement.classList.remove('dark-mode');
+            themeToggleButton.textContent = '☀️ Light Mode';
+            localStorage.setItem('theme', 'light');
+        }
+    };
+
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme) {
+        setTheme(currentTheme);
+    } else {
+        setTheme('dark'); // Default to dark mode
+    }
+
+    themeToggleButton.addEventListener('click', () => {
+        if (bodyElement.classList.contains('dark-mode')) {
+            setTheme('light');
+        } else {
+            setTheme('dark');
+        }
+    });
+
+    // --- LockKeyReaction Game Logic ---
+
     // --- DOM Element References ---
     const statLine1 = document.getElementById('stat-line1');
     const statLine2 = document.getElementById('stat-line2');
-    // ... (rest of stat lines)
     const statLine3 = document.getElementById('stat-line3');
     const statLine4 = document.getElementById('stat-line4');
     const statLine5 = document.getElementById('stat-line5');
@@ -14,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statCurrentLedTarget = document.getElementById('stat-current-led-target');
 
     const visualLedArea = document.getElementById('visual-led-area');
-    const ledVisualDOMElements = { // Renamed to avoid conflict with ledVisuals in Pygame
+    const ledVisualDOMElements = {
         "Num_Lock": document.getElementById('led-Num_Lock'),
         "Caps_Lock": document.getElementById('led-Caps_Lock'),
         "Scroll_Lock": document.getElementById('led-Scroll_Lock')
@@ -25,17 +57,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Global Variables ---
     let appStartTime = Date.now();
-    let showVisualButtons = true;
+    let showVisualButtons = true; // Informational, visual LEDs are the game
 
     // --- LED Reaction Game State Variables ---
-    const ledMapping = { // Maps LED Name to KeyboardEvent.key
+    const ledMapping = {
         "Num_Lock": "ArrowLeft",
         "Caps_Lock": "ArrowDown",
         "Scroll_Lock": "ArrowRight"
     };
-    const ledNames = Object.keys(ledMapping); // ["Num_Lock", "Caps_Lock", "Scroll_Lock"]
+    const ledNames = Object.keys(ledMapping);
 
-    let currentLedName = null; // Stores the "name" of the active LED, e.g., "Num_Lock"
+    let currentLedName = null;
     let ledTimerId = null;
     let ledReactionTimes = [];
     let ledCorrectPresses = 0;
@@ -44,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let ledTime = 1000;
     let ledStartTime = null;
 
-    let ledGameStartTime = Date.now();
     let totalPauseDuration = 0.0;
     let activeGameTime = 0.0;
     let lastFrameTime = Date.now();
@@ -59,20 +90,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const keysDown = new Set();
 
-    // --- Helper Functions (Statistics - unchanged) ---
-    function getOrDefault(value, defaultValue = "N/A") { /* ... */ }
-    function formatDecimal(value, places = 2) { /* ... */ }
-    function getLedFastest() { /* ... */ }
-    function getLedSlowest() { /* ... */ }
-    function getLedAverage() { /* ... */ }
-    function getLedMedian() { /* ... */ }
-    function getLedStdev() { /* ... */ }
-    function getLedPercentile(p) { /* ... */ }
-    function getLedPercentile25() { return getLedPercentile(25); }
-    function getLedPercentile75() { return getLedPercentile(75); }
-    function getLedAccuracy() { /* ... */ }
-    function getLedPromptRatio() { /* ... */ }
-    // (Copy the full statistics functions from the previous script.js)
+    // --- Helper Functions (Statistics) ---
+    function formatDecimal(value, places = 2) {
+        if (typeof value === 'number' && !isNaN(value)) {
+            return value.toFixed(places);
+        }
+        return "N/A";
+    }
+
     function getLedFastest() {
         return ledReactionTimes.length ? formatDecimal(Math.min(...ledReactionTimes)) : "N/A";
     }
@@ -113,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const d1 = sorted[c] * (k - f);
         return formatDecimal(d0 + d1);
     }
-    
+
     function getLedPercentile25() { return getLedPercentile(25); }
     function getLedPercentile75() { return getLedPercentile(75); }
 
@@ -132,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return "N/A";
     }
 
-
     // --- LED Simulation & Game Logic ---
     function turnOffAllVisualLeds() {
         for (const ledDomName in ledVisualDOMElements) {
@@ -140,12 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function activateVisualLed(ledName) { // ledName is "Num_Lock", etc.
+    function activateVisualLed(ledName) {
         if (ledVisualDOMElements[ledName]) {
             ledVisualDOMElements[ledName].classList.add('active');
         }
     }
-    
+
     function decreaseLedTime(current) {
         if (current > 100) return Math.max(1, current - 5);
         if (current > 50) return Math.max(1, current - 2);
@@ -155,17 +179,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setNewLedTimer() {
         if (ledTimerId) clearTimeout(ledTimerId);
-        ledTimerId = setTimeout(handleNewLedEventDueToTimeout, ledTime); // Renamed for clarity
+        ledTimerId = setTimeout(handleNewLedEventDueToTimeout, ledTime);
     }
 
     function handleNewLedEventDueToTimeout() {
         turnOffAllVisualLeds();
-        if (currentLedName !== null) { // If an LED was active and timer expired, it's a miss
+        if (currentLedName !== null) {
             ledMissedPrompts++;
             currentStreak = 0;
-            ledTime = decreaseLedTime(ledTime); // Penalize for miss
+            ledTime = decreaseLedTime(ledTime);
         }
-        
         pickAndDisplayNewLed();
     }
 
@@ -174,10 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
         activateVisualLed(currentLedName);
         ledStartTime = Date.now();
         ledTotalPrompts++;
-        setNewLedTimer(); // Set timer for this new LED
+        setNewLedTimer();
         updateUI();
     }
-    
+
     function resetGame() {
         currentLedName = null;
         if (ledTimerId) clearTimeout(ledTimerId);
@@ -188,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ledTotalPresses = 0;
         ledTime = 1000;
         ledStartTime = null;
-        
+
         totalPauseDuration = 0.0;
         activeGameTime = 0.0;
         lastFrameTime = Date.now();
@@ -197,18 +220,18 @@ document.addEventListener('DOMContentLoaded', () => {
         currentStreak = 0;
         longestStreak = 0;
         ledTotalPrompts = 0;
-        
+
         paused = true;
         pauseStartTime = Date.now();
         keysDown.clear();
-        
+
         turnOffAllVisualLeds();
         updateUI();
     }
 
     // --- UI Update Function ---
     function updateUI() {
-        statLine1.textContent = `Total Inputs: ${ledTotalPresses} (Wrong: ${ledWrongPresses})`; // Changed "Key Presses" to "Inputs"
+        statLine1.textContent = `Total Inputs: ${ledTotalPresses} (Wrong: ${ledWrongPresses})`;
         statLine2.textContent = `Successful Inputs: ${ledCorrectPresses} | Accuracy: ${getLedAccuracy()} | Prompts: ${ledTotalPrompts} (Prompt Ratio: ${getLedPromptRatio()})`;
         statLine3.textContent = `Fastest: ${getLedFastest()} ms | Slowest: ${getLedSlowest()} ms | Average: ${getLedAverage()} ms`;
         statLine4.textContent = `Median: ${getLedMedian()} ms | Stdev: ${getLedStdev()} ms`;
@@ -216,12 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
         statLine6.textContent = `Current Streak: ${currentStreak} | Longest Streak: ${longestStreak}`;
         statLine7.textContent = `Missed Prompts: ${ledMissedPrompts}`;
         statLine8.textContent = `Reaction Time Window: ${ledTime} ms`;
-        
+
         const overallTime = Math.floor((Date.now() - appStartTime) / 1000);
         const activeTimeDisplay = Math.floor(activeGameTime);
         statLine9.textContent = `Active Game Time (unpaused): ${activeTimeDisplay} s`;
         statLine10.textContent = `Overall Game Time: ${overallTime} s`;
-        statCurrentLedTarget.textContent = `Target LED Name: ${currentLedName || "N/A"}`; // Displaying LED name directly
+        statCurrentLedTarget.textContent = `Target LED Name: ${currentLedName || "N/A"}`;
 
         if (paused) {
             pauseMessageEl.textContent = "GAME PAUSED. Press SPACE to resume.";
@@ -236,24 +259,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentPromptMessageEl.textContent = "Waiting for next LED...";
             }
         }
-        visualLedArea.style.display = showVisualButtons ? 'flex' : 'none';
+        visualLedArea.style.display = showVisualButtons ? 'flex' : 'none'; // Though showVisualButtons is always true
     }
 
     // --- Central Input Processing Logic ---
-    function processPlayerInput(activatedKeyOrLedName) { // Can be "ArrowLeft" or "Num_Lock"
+    function processPlayerInput(activatedKeyOrLedName) {
         if (paused || !currentLedName) return;
 
         ledTotalPresses++;
         const reaction = Date.now() - ledStartTime;
-        
+
         let inputMatchesTarget = false;
-        // Check if input matches the current LED's expected key OR the LED's name (for clicks)
         if (ledMapping[currentLedName] === activatedKeyOrLedName || currentLedName === activatedKeyOrLedName) {
             inputMatchesTarget = true;
         }
 
         if (inputMatchesTarget) {
-            if (reaction <= ledTime) { // Correct and within time
+            if (reaction <= ledTime) {
                 ledReactionTimes.push(reaction);
                 ledCorrectPresses++;
                 currentStreak++;
@@ -261,27 +283,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     longestStreak = currentStreak;
                 }
                 ledTime = decreaseLedTime(ledTime);
-            } else { // Correct target but too late
+            } else {
                 ledMissedPrompts++;
                 currentStreak = 0;
-                // ledTime = decreaseLedTime(ledTime); // Optionally penalize time for slow correct
             }
-        } else { // Wrong key or wrong LED clicked
+        } else {
             ledWrongPresses++;
-            ledMissedPrompts++; // A wrong input also means the current prompt was missed
+            ledMissedPrompts++;
             currentStreak = 0;
-            // ledTime = decreaseLedTime(ledTime); // Optionally penalize time for wrong input
         }
-        
-        // Common logic for any valid game input (right or wrong) regarding current LED
+
         turnOffAllVisualLeds();
         currentLedName = null;
         if (ledTimerId) clearTimeout(ledTimerId);
         ledTimerId = null;
-        setTimeout(pickAndDisplayNewLed, 100); // Schedule next LED quickly
+        setTimeout(pickAndDisplayNewLed, 100);
         updateUI();
     }
-
 
     // --- Event Handlers ---
     function handleKeyDown(event) {
@@ -289,9 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
         keysDown.add(event.key);
 
         if (event.key.toLowerCase() === 'h') {
-            // Informational only for web
-            console.log("Visual buttons toggle (info only for web version)");
-            // showVisualButtons = !showVisualButtons; // Can be re-enabled if you want to hide them
+            console.log("Visual buttons toggle (info only for web version, they are always displayed). Current state: " + showVisualButtons);
+            // showVisualButtons = !showVisualButtons; // Can be re-enabled if actual hiding is desired
             updateUI();
             return;
         }
@@ -324,7 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Check if the pressed key is one of the game action keys
         if (Object.values(ledMapping).includes(event.key)) {
             processPlayerInput(event.key);
         }
@@ -334,16 +350,11 @@ document.addEventListener('DOMContentLoaded', () => {
         keysDown.delete(event.key);
     }
 
-    // Add click listeners to visual LEDs
-    for (const ledDomName in ledVisualDOMElements) { // e.g., ledDomName is "Num_Lock"
+    for (const ledDomName in ledVisualDOMElements) {
         ledVisualDOMElements[ledDomName].addEventListener('click', () => {
-            // When an LED div is clicked, we pass its 'name' (like "Num_Lock")
-            // to processPlayerInput.
-            // processPlayerInput will then check if this clicked ledName matches currentLedName
             processPlayerInput(ledDomName);
         });
     }
-
 
     // --- Game Loop (for time updates) ---
     function gameLoop() {
@@ -353,25 +364,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!paused) {
             activeGameTime += dt;
-
-            // Timeout check (mostly as a backup, setTimeout should handle it)
-            if (currentLedName && ledStartTime && (now - ledStartTime) >= ledTime) {
-                // This means setNewLedTimer's timeout fired, or should have.
-                // handleNewLedEventDueToTimeout will be called by the timer.
-                // If for some reason the timer failed, this is a fallback.
-                // To avoid double-processing, we ensure this doesn't preempt the timer too aggressively.
-                // The primary handling is in handleNewLedEventDueToTimeout.
-            }
         }
-        
-        updateUI(); // Continuously update UI for timers etc.
+
+        updateUI();
         requestAnimationFrame(gameLoop);
     }
 
     // --- Initialization ---
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
-    
+
     resetGame();
     requestAnimationFrame(gameLoop);
 });

@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <button id="themeToggle">☀️ Light Mode</button> <!-- Theme Toggle Button -->
+
     <div id="game-container">
         <div id="stats-area">
             <p id="stat-line1"></p>
@@ -25,15 +27,12 @@
         <div id="visual-led-area">
             <div class="led-button-wrapper">
                 <div id="led-Num_Lock" class="led-visual" data-led-name="Num_Lock"></div>
-                <!-- Removed span -->
             </div>
             <div class="led-button-wrapper">
                 <div id="led-Caps_Lock" class="led-visual" data-led-name="Caps_Lock"></div>
-                <!-- Removed span -->
             </div>
             <div class="led-button-wrapper">
                 <div id="led-Scroll_Lock" class="led-visual" data-led-name="Scroll_Lock"></div>
-                <!-- Removed span -->
             </div>
         </div>
 
@@ -44,8 +43,8 @@
 
         <div id="hint-area">
             <p>Click LEDs or use Arrow Keys (Left, Down, Right).</p>
-            <p>Press 'H' to toggle visual button display (they are always on in this web version).</p>
             <p>Press 'R' to reset the game.</p>
+            <p>(Press 'H' for informational toggle in console)</p>
         </div>
     </div>
 
