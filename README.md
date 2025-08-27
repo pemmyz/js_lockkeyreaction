@@ -13,7 +13,7 @@ A fast-paced LED reaction training game for web browsers! Your task is to respon
 
 ## 🔥 Features
 
-- 🎮 Web-based reaction game originall made for three LED targets: Num Lock, Caps Lock, Scroll Lock
+- 🎮 Web-based reaction game originally made for three LED targets: Num Lock, Caps Lock, Scroll Lock
 - 🕹️ Controls via arrow keys or LED click
 - 📈 Real-time statistics: fastest, slowest, average, median, stdev, accuracy, prompt ratio
 - 🌙 Toggle between Light and Dark mode with localStorage memory
