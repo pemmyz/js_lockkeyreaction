@@ -5,6 +5,8 @@
 ## Screenshots
 ![Game 1](screenshots/game_1.png)
 
+This is a javascript browser version of a similar [game](https://github.com/pemmyz/LockKeyReaction) that can actually toggle the lock key lights on keyboard under GNU/Linux.
+https://github.com/pemmyz/LockKeyReaction
 
 # LockKeyReaction
 
